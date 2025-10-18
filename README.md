@@ -1,6 +1,6 @@
 # Discord Bot - Modular & Dockerized
 
-A simple yet feature-rich self-hosted Discord bot built with Python, featuring role-based permissions, reminder system, and Docker deployment support.
+A simple yet feature-rich self-hosted Discord bot built with Python, featuring role-based permissions, reminder system, and Docker deployment support. You can refer to setup.sh for fast installation script (Please do double check .sh script as it currently may not run without sudo permission enabled).
 
 ## Features
 
