@@ -1,6 +1,6 @@
 # Discord Bot - Modular & Dockerized
 
-A feature-rich Discord bot built with Python, featuring role-based permissions, reminder system, and Docker deployment support.
+A simple yet feature-rich self-hosted Discord bot built with Python, featuring role-based permissions, reminder system, and Docker deployment support.
 
 ## Features
 
@@ -60,15 +60,23 @@ A feature-rich Discord bot built with Python, featuring role-based permissions, 
    COMMAND_PREFIX=!
    ```
 
-3. **Start the bot**
+3. **(Optional) Change docker compose file accordingly to your needs**
 
    ```bash
-   docker-compose up -d
+   sudo nano docker-compose.yml
+   ```
+   Edit file path instead of "./" for build and volumns. Change port to "[your_port]:6379" if default redis port is taken
+
+
+4. **Start the bot**
+
+   ```bash
+   docker compose up -d
    ```
 
-4. **Check logs**
+5. **Check logs**
    ```bash
-   docker-compose logs -f discord-bot
+   docker compose logs -f discord-bot
    ```
 
 ### Getting Your Bot Token
@@ -237,26 +245,27 @@ For development without Docker:
 ## Docker Management
 
 ### Common Commands
+(assuming you have sudo permission)
 
 ```bash
 # Start the bot
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f discord-bot
+docker compose logs -f discord-bot
 
 # Restart the bot
-docker-compose restart discord-bot
+docker compose restart discord-bot
 
 # Stop the bot
-docker-compose down
+docker compose down
 
 # Update and rebuild
-docker-compose build --no-cache
-docker-compose up -d
+docker compose build --no-cache
+docker compose up -d
 
 # Access bot container
-docker-compose exec discord-bot bash
+docker compose exec discord-bot bash
 ```
 
 ### Data Persistence
@@ -287,7 +296,7 @@ The bot includes health checks that monitor:
 Check bot logs for detailed error information:
 
 ```bash
-docker-compose logs -f discord-bot
+docker compose logs -f discord-bot
 ```
 
 ## Security Notes

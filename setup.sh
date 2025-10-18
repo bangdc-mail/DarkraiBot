@@ -39,7 +39,7 @@ check_docker() {
         exit 1
     fi
 
-    if ! command -v docker-compose &> /dev/null; then
+    if ! command -v docker compose &> /dev/null; then
         print_error "Docker Compose is not installed. Please install Docker Compose first."
         exit 1
     fi
@@ -72,53 +72,53 @@ setup_data() {
 # Build and start the bot
 start_bot() {
     print_status "Building and starting the Discord bot..."
-    docker-compose up -d --build
+    docker compose up -d --build
 
     # Wait a moment for containers to start
     sleep 3
 
     # Check if containers are running
-    if docker-compose ps | grep -q "Up"; then
+    if docker compose ps | grep -q "Up"; then
         print_success "Bot is starting up!"
-        print_status "You can check logs with: docker-compose logs -f discord-bot"
+        print_status "You can check logs with: docker compose logs -f discord-bot"
     else
-        print_error "Failed to start the bot. Check logs with: docker-compose logs"
+        print_error "Failed to start the bot. Check logs with: docker compose logs"
     fi
 }
 
 # Stop the bot
 stop_bot() {
     print_status "Stopping the Discord bot..."
-    docker-compose down
+    docker compose down
     print_success "Bot stopped"
 }
 
 # Show logs
 show_logs() {
     print_status "Showing bot logs (Ctrl+C to exit)..."
-    docker-compose logs -f discord-bot
+    docker compose logs -f discord-bot
 }
 
 # Restart the bot
 restart_bot() {
     print_status "Restarting the Discord bot..."
-    docker-compose restart discord-bot
+    docker compose restart discord-bot
     print_success "Bot restarted"
 }
 
 # Update the bot
 update_bot() {
     print_status "Updating the Discord bot..."
-    docker-compose down
-    docker-compose build --no-cache
-    docker-compose up -d
+    docker compose down
+    docker compose build --no-cache
+    docker compose up -d
     print_success "Bot updated and restarted"
 }
 
 # Show status
 show_status() {
     print_status "Bot Status:"
-    docker-compose ps
+    docker compose ps
 
     echo
     print_status "Resource Usage:"
