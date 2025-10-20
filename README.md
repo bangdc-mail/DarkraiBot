@@ -31,20 +31,43 @@ A simple yet feature-rich self-hosted Discord bot built with Python, featuring r
 - Multiple IP service fallbacks for reliability
 - Detailed IP information with geolocation data
 
-### 🐳 Docker Support
+### � Dynamic Plugin System
+
+- Hot-reload plugins without restarting the bot
+- Plugin discovery and dependency management
+- Plugin registry with metadata support
+- Easy plugin development with templates
+- Runtime plugin loading/unloading
+
+### �🐳 Docker Support
 
 - Fully containerized with Docker Compose
 - Redis integration for caching
 - Persistent data storage
 - Health checks and auto-restart
 
+### 🛠️ Development Features
+
+- Local development support without Docker
+- Development utilities and scripts
+- Plugin template generator
+- Comprehensive logging system
+
 ## Quick Start
+
+Choose your preferred setup method:
+
+- **🐳 [Docker Setup](#docker-setup)** - Recommended for production
+- **💻 [Local Development](#local-development)** - For development and testing
 
 ### Prerequisites
 
-- Docker and Docker Compose
+- Docker and Docker Compose (for Docker setup)
+- Python 3.9+ (for local development)
 - A Discord application/bot token
 - Your Discord user ID
+
+## Docker Setup
 
 ### Installation
 
@@ -99,6 +122,24 @@ A simple yet feature-rich self-hosted Discord bot built with Python, featuring r
 
 1. Enable Developer Mode in Discord (User Settings > Advanced > Developer Mode)
 2. Right-click your username and select "Copy ID"
+
+## Local Development
+
+For local development without Docker, see the detailed [Local Development Guide](LOCAL_DEVELOPMENT.md).
+
+### Quick Local Setup
+
+```bash
+# Clone and setup
+git clone <repo-url>
+cd DarkraiBot
+
+# Automated setup
+python dev.py setup
+
+# Run the bot
+python dev.py run
+```
 
 ## Commands
 
@@ -157,6 +198,22 @@ A simple yet feature-rich self-hosted Discord bot built with Python, featuring r
 - `!set admin-roles admin administrator` - Set admin roles
 - `!set mod-roles moderator mod helper` - Set moderator roles
 
+### Plugin Management Commands (Admin Level)
+
+- `!plugin list` - List all available plugins
+- `!plugin load <name>` - Load a specific plugin
+- `!plugin unload <name>` - Unload a plugin
+- `!plugin reload <name>` - Reload a plugin (or all if no name)
+- `!plugin info <name>` - Show plugin information
+- `!plugin status` - Plugin system statistics
+- `!plugin rescan` - Rediscover plugins
+
+**Plugin Examples:**
+
+- `!plugin load my_plugin` - Load a plugin
+- `!plugin reload` - Reload all plugins
+- `!plugin info general` - Show info about general plugin
+
 ### Owner Commands (Owner Only)
 
 - `!ip` - Check bot's public IP address
@@ -207,12 +264,15 @@ discordbot/
 │   │   ├── reminders.py   # Reminder system
 │   │   ├── timezone.py    # Timezone commands
 │   │   ├── settings.py    # Bot settings management
+│   │   ├── plugin_management.py # Plugin system commands
 │   │   └── ip_check.py    # IP checking commands
+│   ├── plugins/           # Custom plugins directory
 │   └── utils/             # Utility modules
 │       ├── config.py      # Configuration management
 │       ├── permissions.py # Permission system
 │       ├── database.py    # Database operations
-│       └── time_parser.py # Time parsing utilities
+│       ├── time_parser.py # Time parsing utilities
+│       └── plugin_manager.py # Dynamic plugin loading
 ├── data/                  # Persistent data storage
 ├── config/                # Configuration files
 ├── docker-compose.yml     # Docker Compose configuration

@@ -15,13 +15,39 @@ from discord.ext import commands
 from utils.config import Config
 from utils.permissions import PermissionManager
 from utils.database import Database
+from utils.plugin_manager import PluginManager
+
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("/app/data/bot.log"), logging.StreamHandler()],
-)
+def setup_logging():
+    """Setup logging for both Docker and local environments."""
+    # Determine log file path based on environment
+    if os.path.exists("/app/data"):
+        # Docker environment
+        log_file_path = "/app/data/bot.log"
+        data_dir = Path("/app/data")
+    else:
+        # Local development environment
+        project_root = Path(__file__).parent.parent
+        data_dir = project_root / "data"
+        data_dir.mkdir(exist_ok=True)
+        log_file_path = str(data_dir / "bot.log")
+
+    # Get log level from config
+    log_level = getattr(logging, Config.LOG_LEVEL, logging.INFO)
+
+    # Configure logging
+    logging.basicConfig(
+        level=log_level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.FileHandler(log_file_path), logging.StreamHandler()],
+    )
+
+    return data_dir
+
+
+# Setup logging and get data directory
+data_dir = setup_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -41,6 +67,7 @@ class ModularBot(commands.Bot):
         self.config = Config()
         self.permission_manager = PermissionManager(self)
         self.database = Database()
+        self.plugin_manager = PluginManager(self, data_dir)
 
     async def get_prefix(self, message):
         """Get the command prefix for a message."""
@@ -63,25 +90,41 @@ class ModularBot(commands.Bot):
         # Initialize database
         await self.database.initialize()
 
-        # Load all cogs
-        await self.load_cogs()
+        # Initialize plugin manager
+        await self.plugin_manager.load_registry()
+
+        # Load all plugins using plugin manager
+        await self.load_plugins()
 
         logger.info("Bot setup completed!")
 
+    async def load_plugins(self):
+        """Load all plugins using the plugin manager."""
+        logger.info("Loading plugins with plugin manager...")
+
+        results = await self.plugin_manager.load_all_plugins()
+
+        success_count = sum(1 for success in results.values() if success)
+        total_count = len(results)
+
+        logger.info(
+            f"Plugin loading completed: {success_count}/{total_count} plugins loaded successfully"
+        )
+
+        # Log any failed plugins
+        for plugin_name, success in results.items():
+            if not success:
+                plugin_info = self.plugin_manager.get_plugin_info(plugin_name)
+                error_msg = (
+                    str(plugin_info.error)
+                    if plugin_info and plugin_info.error
+                    else "Unknown error"
+                )
+                logger.warning(f"Failed to load plugin {plugin_name}: {error_msg}")
+
     async def load_cogs(self):
-        """Load all cogs from the cogs directory."""
-        cogs_dir = Path(__file__).parent / "cogs"
-
-        for cog_file in cogs_dir.glob("*.py"):
-            if cog_file.name.startswith("_"):
-                continue
-
-            cog_name = f"cogs.{cog_file.stem}"
-            try:
-                await self.load_extension(cog_name)
-                logger.info(f"Loaded cog: {cog_name}")
-            except Exception as e:
-                logger.error(f"Failed to load cog {cog_name}: {e}")
+        """Legacy method - redirects to load_plugins for compatibility."""
+        await self.load_plugins()
 
     async def on_ready(self):
         """Called when the bot is ready."""
