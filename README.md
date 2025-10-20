@@ -7,8 +7,16 @@ A simple yet feature-rich self-hosted Discord bot built with Python, featuring r
 ### 🔐 Role-Based Permission System
 
 - **Owner Level**: Full bot control (IP checking, shutdown, etc.)
-- **Admin/Moderator Level**: Server management commands
+- **Admin Level**: Server management and bot configuration
+- **Moderator Level**: Server moderation commands
 - **User Level**: Basic commands available to all users
+
+### ⚙️ Settings Management
+
+- Configurable command prefix per server
+- Customizable admin and moderator role names
+- Guild-specific permission settings
+- Easy-to-use settings commands
 
 ### ⏰ Reminder System
 
@@ -65,8 +73,8 @@ A simple yet feature-rich self-hosted Discord bot built with Python, featuring r
    ```bash
    sudo nano docker-compose.yml
    ```
-   Edit file path instead of "./" for build and volumns. Change port to "[your_port]:6379" if default redis port is taken
 
+   Edit file path instead of "./" for build and volumns. Change port to "[your_port]:6379" if default redis port is taken
 
 4. **Start the bot**
 
@@ -130,10 +138,24 @@ A simple yet feature-rich self-hosted Discord bot built with Python, featuring r
 - `!time Europe/London` - London time
 - `!time compare EST PST` - Compare EST and PST
 
-### Admin Commands (Admin/Moderator)
+### Admin Commands (Admin Level)
 
 - `!reload <cog>` - Reload a bot module
 - `!status` - Show detailed bot status
+
+### Settings Commands (Admin Level)
+
+- `!set prefix <new_prefix>` - Change command prefix for this server
+- `!set admin-roles <role1> [role2]...` - Set admin role names
+- `!set mod-roles <role1> [role2]...` - Set moderator role names
+- `!set show` - Display current bot settings
+- `!set help` - Detailed settings help
+
+**Settings Examples:**
+
+- `!set prefix ?` - Change prefix to "?"
+- `!set admin-roles admin administrator` - Set admin roles
+- `!set mod-roles moderator mod helper` - Set moderator roles
 
 ### Owner Commands (Owner Only)
 
@@ -145,24 +167,32 @@ A simple yet feature-rich self-hosted Discord bot built with Python, featuring r
 
 ### Environment Variables
 
-| Variable           | Required | Default                 | Description                        |
-| ------------------ | -------- | ----------------------- | ---------------------------------- |
-| `BOT_TOKEN`        | Yes      | -                       | Discord bot token                  |
-| `OWNER_ID`         | Yes      | -                       | Discord user ID of the owner       |
-| `COMMAND_PREFIX`   | No       | `!`                     | Command prefix                     |
-| `LOG_LEVEL`        | No       | `INFO`                  | Logging level                      |
-| `ADMIN_ROLE_NAMES` | No       | `admin,moderator,mod`   | Admin role names (comma-separated) |
-| `DATABASE_URL`     | No       | `sqlite:///data/bot.db` | Database connection string         |
-| `REDIS_URL`        | No       | `redis://redis:6379/0`  | Redis connection string            |
+| Variable           | Required | Default                 | Description                                    |
+| ------------------ | -------- | ----------------------- | ---------------------------------------------- |
+| `BOT_TOKEN`        | Yes      | -                       | Discord bot token                              |
+| `OWNER_ID`         | Yes      | -                       | Discord user ID of the owner                   |
+| `COMMAND_PREFIX`   | No       | `!`                     | Command prefix                                 |
+| `LOG_LEVEL`        | No       | `INFO`                  | Logging level                                  |
+| `ADMIN_ROLE_NAMES` | No       | `admin,moderator,mod`   | Default admin role names (comma-separated)     |
+| `MOD_ROLE_NAMES`   | No       | `moderator,mod`         | Default moderator role names (comma-separated) |
+| `DATABASE_URL`     | No       | `sqlite:///data/bot.db` | Database connection string                     |
+| `REDIS_URL`        | No       | `redis://redis:6379/0`  | Redis connection string                        |
 
-### Admin Roles
+### Permission Levels
 
-The bot recognizes users as admins if they have:
+The bot has a four-tier permission system:
 
-- Server administrator permissions, OR
-- A role with one of the configured admin role names
+1. **Owner**: Bot owner (configured via OWNER_ID)
+2. **Admin**: Users with server admin permissions OR configured admin roles
+3. **Moderator**: Users with configured moderator roles
+4. **User**: All server members
 
-Default admin role names: `admin`, `moderator`, `mod`
+Default role names:
+
+- Admin roles: `admin`, `administrator`, `mod`
+- Moderator roles: `moderator`, `mod`
+
+Role names can be customized per server using the settings commands.
 
 ## Architecture
 
@@ -175,6 +205,8 @@ discordbot/
 │   ├── cogs/              # Modular command groups
 │   │   ├── general.py     # General commands
 │   │   ├── reminders.py   # Reminder system
+│   │   ├── timezone.py    # Timezone commands
+│   │   ├── settings.py    # Bot settings management
 │   │   └── ip_check.py    # IP checking commands
 │   └── utils/             # Utility modules
 │       ├── config.py      # Configuration management
@@ -245,6 +277,7 @@ For development without Docker:
 ## Docker Management
 
 ### Common Commands
+
 (assuming you have sudo permission)
 
 ```bash
