@@ -74,6 +74,20 @@ class Database:
         """
         )
 
+        # Guild settings table
+        await self._connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS guild_settings (
+                guild_id INTEGER PRIMARY KEY,
+                command_prefix TEXT DEFAULT '!',
+                admin_roles TEXT DEFAULT 'admin,administrator',
+                mod_roles TEXT DEFAULT 'moderator,mod',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """
+        )
+
         await self._connection.commit()
 
     async def close(self):
@@ -227,6 +241,67 @@ class Database:
                 user_id,
                 settings.get("timezone"),
                 settings.get("reminder_enabled"),
+                datetime.utcnow(),
+            ),
+        )
+        await self._connection.commit()
+
+    # Guild settings methods
+    async def get_guild_settings(self, guild_id: int) -> Dict[str, Any]:
+        """Get guild settings."""
+        cursor = await self._connection.execute(
+            """
+            SELECT command_prefix, admin_roles, mod_roles
+            FROM guild_settings
+            WHERE guild_id = ?
+        """,
+            (guild_id,),
+        )
+
+        row = await cursor.fetchone()
+        if row:
+            return {
+                "command_prefix": row[0],
+                "admin_roles": row[1].split(",") if row[1] else [],
+                "mod_roles": row[2].split(",") if row[2] else [],
+            }
+        else:
+            # Return defaults from config
+            from .config import Config
+
+            return {
+                "command_prefix": Config.COMMAND_PREFIX,
+                "admin_roles": Config.ADMIN_ROLE_NAMES,
+                "mod_roles": Config.MOD_ROLE_NAMES,
+            }
+
+    async def update_guild_settings(self, guild_id: int, **settings):
+        """Update guild settings."""
+        # Convert lists to comma-separated strings
+        admin_roles = settings.get("admin_roles")
+        if isinstance(admin_roles, list):
+            admin_roles = ",".join(admin_roles)
+
+        mod_roles = settings.get("mod_roles")
+        if isinstance(mod_roles, list):
+            mod_roles = ",".join(mod_roles)
+
+        # Insert or update guild settings
+        await self._connection.execute(
+            """
+            INSERT INTO guild_settings (guild_id, command_prefix, admin_roles, mod_roles, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(guild_id) DO UPDATE SET
+                command_prefix = COALESCE(excluded.command_prefix, command_prefix),
+                admin_roles = COALESCE(excluded.admin_roles, admin_roles),
+                mod_roles = COALESCE(excluded.mod_roles, mod_roles),
+                updated_at = excluded.updated_at
+        """,
+            (
+                guild_id,
+                settings.get("command_prefix"),
+                admin_roles,
+                mod_roles,
                 datetime.utcnow(),
             ),
         )

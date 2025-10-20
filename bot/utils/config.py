@@ -21,10 +21,14 @@ class Config:
     DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///data/bot.db")
     REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 
-    # Admin role configuration
+    # Role configuration
     ADMIN_ROLE_NAMES = [
         name.strip()
-        for name in os.getenv("ADMIN_ROLE_NAMES", "admin,moderator,mod").split(",")
+        for name in os.getenv("ADMIN_ROLE_NAMES", "admin,administrator").split(",")
+    ]
+
+    MOD_ROLE_NAMES = [
+        name.strip() for name in os.getenv("MOD_ROLE_NAMES", "moderator,mod").split(",")
     ]
 
     # Feature toggles

@@ -35,12 +35,26 @@ class ModularBot(commands.Bot):
         intents.members = True
 
         super().__init__(
-            command_prefix=Config.COMMAND_PREFIX, intents=intents, help_command=None
+            command_prefix=self.get_prefix, intents=intents, help_command=None
         )
 
         self.config = Config()
         self.permission_manager = PermissionManager(self)
         self.database = Database()
+
+    async def get_prefix(self, message):
+        """Get the command prefix for a message."""
+        # Default prefix for DMs
+        if not message.guild:
+            return Config.COMMAND_PREFIX
+
+        try:
+            # Get guild-specific prefix from database
+            settings = await self.database.get_guild_settings(message.guild.id)
+            return settings["command_prefix"]
+        except Exception as e:
+            logger.warning(f"Failed to get prefix for guild {message.guild.id}: {e}")
+            return Config.COMMAND_PREFIX
 
     async def setup_hook(self):
         """Called when the bot is starting up."""

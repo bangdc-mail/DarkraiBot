@@ -16,8 +16,9 @@ class PermissionLevel(Enum):
     """Permission levels for commands."""
 
     USER = 1
-    ADMIN = 2
-    OWNER = 3
+    MOD = 2
+    ADMIN = 3
+    OWNER = 4
 
 
 class PermissionManager:
@@ -25,6 +26,16 @@ class PermissionManager:
 
     def __init__(self, bot):
         self.bot = bot
+
+    async def get_guild_settings(self, guild_id: int):
+        """Get guild-specific settings from database."""
+        if hasattr(self.bot, "database"):
+            return await self.bot.database.get_guild_settings(guild_id)
+        return {
+            "admin_roles": Config.ADMIN_ROLE_NAMES,
+            "mod_roles": Config.MOD_ROLE_NAMES,
+            "command_prefix": Config.COMMAND_PREFIX,
+        }
 
     def get_user_permission_level(
         self, user: Union[discord.Member, discord.User], guild: discord.Guild = None
@@ -38,16 +49,22 @@ class PermissionManager:
         if not guild or not isinstance(user, discord.Member):
             return PermissionLevel.USER
 
-        # Admin check - check for admin permissions or specific roles
+        # Admin check - check for admin permissions first
         if user.guild_permissions.administrator:
             return PermissionLevel.ADMIN
 
-        # Check for admin role names
+        # Get role names for the user
         user_role_names = [role.name.lower() for role in user.roles]
-        admin_role_names = [name.lower() for name in Config.ADMIN_ROLE_NAMES]
 
+        # Check for admin role names (use default config for now)
+        admin_role_names = [name.lower() for name in Config.ADMIN_ROLE_NAMES]
         if any(role_name in admin_role_names for role_name in user_role_names):
             return PermissionLevel.ADMIN
+
+        # Check for mod role names
+        mod_role_names = [name.lower() for name in Config.MOD_ROLE_NAMES]
+        if any(role_name in mod_role_names for role_name in user_role_names):
+            return PermissionLevel.MOD
 
         return PermissionLevel.USER
 
@@ -74,7 +91,8 @@ def require_permission(level: PermissionLevel):
             if not permission_manager.has_permission(ctx.author, level, ctx.guild):
                 level_names = {
                     PermissionLevel.USER: "user",
-                    PermissionLevel.ADMIN: "admin/moderator",
+                    PermissionLevel.MOD: "moderator",
+                    PermissionLevel.ADMIN: "admin",
                     PermissionLevel.OWNER: "owner",
                 }
                 await ctx.send(
@@ -97,6 +115,11 @@ def owner_only():
 def admin_only():
     """Decorator for admin-only commands."""
     return require_permission(PermissionLevel.ADMIN)
+
+
+def mod_only():
+    """Decorator for moderator+ commands."""
+    return require_permission(PermissionLevel.MOD)
 
 
 def user_level():
