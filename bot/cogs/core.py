@@ -1,13 +1,21 @@
 # Plugin: Core
-# Version: 1.0.0
+# Version: 2.0.0
 # Author: DarkraiBot
-# Description: Essential bot commands and core functionality
+# Description: Core bot functionality - Essential commands and administrative utilities
 # Dependencies:
 # Permissions: user
 
 """
-Core Cog - Essential bot commands and core functionality.
-Consolidates general commands with administrative and owner utilities.
+Core Cog - The essential foundation of DarkraiBot.
+
+This is the primary cog that provides all essential bot functionality including:
+- Help system with role-based command filtering
+- Bot information, status, and diagnostics
+- Owner administrative utilities (DM, server management, restart/shutdown)
+- Admin utilities (reload, system status)
+- User services (contact system, basic commands)
+
+This cog is critical to bot operation and should always be loaded.
 """
 
 import os
@@ -26,12 +34,13 @@ logger = logging.getLogger(__name__)
 
 
 class CoreCog(commands.Cog):
-    """Essential bot commands and core functionality."""
+    """Core bot functionality - Essential commands and administrative utilities."""
 
     def __init__(self, bot):
         self.bot = bot
         self.start_time = datetime.utcnow()
         self.contact_cooldowns: Dict[int, datetime] = {}  # user_id -> last_contact_time
+        logger.info("Core cog initialized - Essential bot functionality loaded")
 
     @commands.command(name="help")
     @user_level()
@@ -80,8 +89,8 @@ class CoreCog(commands.Cog):
     async def _create_help_embed(self, ctx) -> discord.Embed:
         """Create the main help embed."""
         embed = discord.Embed(
-            title="🤖 Bot Help",
-            description="A modular Discord bot with role-based permissions and plugin system.",
+            title="🤖 DarkraiBot Help",
+            description="A modular Discord bot with role-based permissions and dynamic plugin system.",
             color=discord.Color.blue(),
             timestamp=datetime.utcnow(),
         )
@@ -93,11 +102,11 @@ class CoreCog(commands.Cog):
 
         # Core commands (available to all users)
         embed.add_field(
-            name="📋 Core Commands",
+            name="🔷 Core Commands",
             value=(
                 f"`{ctx.prefix}help` - Show this help message\n"
                 f"`{ctx.prefix}ping` - Check bot latency\n"
-                f"`{ctx.prefix}info` - Bot information\n"
+                f"`{ctx.prefix}info` - Bot information and statistics\n"
                 f"`{ctx.prefix}uptime` - Show bot uptime\n"
                 f"`{ctx.prefix}contact <message>` - Contact bot owner"
             ),
@@ -141,8 +150,8 @@ class CoreCog(commands.Cog):
         # Admin commands
         if permission_level.value >= PermissionLevel.ADMIN.value:
             admin_commands = [
-                f"`{ctx.prefix}reload <cog>` - Reload a cog",
-                f"`{ctx.prefix}status` - Bot status information",
+                f"`{ctx.prefix}reload <cog>` - Reload a cog or plugin",
+                f"`{ctx.prefix}status` - Detailed bot status information",
             ]
 
             embed.add_field(
@@ -155,14 +164,14 @@ class CoreCog(commands.Cog):
         if permission_level == PermissionLevel.OWNER:
             owner_commands = [
                 f"`{ctx.prefix}dm <user_id> <message>` - Send DM to user",
-                f"`{ctx.prefix}servers` - List bot servers",
+                f"`{ctx.prefix}servers` - List all bot servers",
                 f"`{ctx.prefix}leave <server_id>` - Leave server(s)",
                 f"`{ctx.prefix}restart` - Restart the bot",
                 f"`{ctx.prefix}shutdown` - Shutdown the bot",
             ]
 
             if "IPCheckCog" in self.bot.cogs:
-                owner_commands.append(f"`{ctx.prefix}ip` - Check bot IP")
+                owner_commands.append(f"`{ctx.prefix}ip` - Check bot IP address")
 
             embed.add_field(
                 name="🔒 Owner Commands",
@@ -177,7 +186,7 @@ class CoreCog(commands.Cog):
         )
 
         embed.set_footer(
-            text=f"Use {ctx.prefix}help <command> for detailed information"
+            text=f"Use {ctx.prefix}help <command> for detailed information • Core v2.0.0"
         )
 
         return embed
@@ -204,9 +213,10 @@ class CoreCog(commands.Cog):
     @commands.command(name="info", aliases=["about"])
     @user_level()
     async def info(self, ctx):
-        """Show information about the bot."""
+        """Show comprehensive information about the bot."""
         embed = discord.Embed(
-            title="🤖 Bot Information",
+            title="🤖 DarkraiBot Information",
+            description="Modular Discord bot with dynamic plugin system and role-based permissions",
             color=discord.Color.blue(),
             timestamp=datetime.utcnow(),
         )
@@ -236,21 +246,23 @@ class CoreCog(commands.Cog):
         else:
             embed.add_field(name="Loaded Cogs", value=len(self.bot.cogs), inline=True)
 
+        embed.add_field(name="Core Version", value="v2.0.0", inline=True)
+
         embed.add_field(
-            name="Features",
-            value="• Role-based permissions\n• Dynamic plugin system\n• Guild-specific settings\n• Docker support",
+            name="Key Features",
+            value="• Role-based permissions (4 levels)\n• Dynamic plugin system with hot-reload\n• Guild-specific settings\n• Docker deployment ready\n• Comprehensive logging system",
             inline=False,
         )
 
         embed.set_thumbnail(url=self.bot.user.display_avatar.url)
-        embed.set_footer(text="DarkraiBot - Modular Discord Bot")
+        embed.set_footer(text="DarkraiBot Core • Essential Bot Functionality")
 
         await ctx.send(embed=embed)
 
     @commands.command(name="uptime")
     @user_level()
     async def uptime(self, ctx):
-        """Show bot uptime."""
+        """Show bot uptime information."""
         uptime = datetime.utcnow() - self.start_time
         uptime_str = self._format_uptime(uptime)
 
@@ -279,7 +291,7 @@ class CoreCog(commands.Cog):
         """
         Send a message to the bot owner.
 
-        Limited to one message per user every 60 seconds.
+        Limited to one message per user every 60 seconds to prevent spam.
 
         Usage: !contact <message>
         """
@@ -419,7 +431,7 @@ class CoreCog(commands.Cog):
     @commands.command(name="servers")
     @owner_only()
     async def list_servers(self, ctx):
-        """List all servers the bot is in."""
+        """List all servers the bot is currently in."""
         guilds = self.bot.guilds
 
         if not guilds:
@@ -430,8 +442,8 @@ class CoreCog(commands.Cog):
         guilds.sort(key=lambda g: g.member_count, reverse=True)
 
         embed = discord.Embed(
-            title="📋 Bot Servers",
-            description=f"Bot is in {len(guilds)} server(s)",
+            title="📋 Bot Server List",
+            description=f"Bot is currently in {len(guilds)} server(s)",
             color=discord.Color.blue(),
             timestamp=datetime.utcnow(),
         )
@@ -549,7 +561,7 @@ class CoreCog(commands.Cog):
     @admin_only()
     async def reload_cog(self, ctx, *, cog_name: str):
         """
-        Reload a bot cog/module.
+        Reload a bot cog or plugin module.
 
         Usage: !reload <cog_name>
         """
@@ -609,9 +621,10 @@ class CoreCog(commands.Cog):
     @commands.command(name="status")
     @admin_only()
     async def status_command(self, ctx):
-        """Show detailed bot status information."""
+        """Show detailed bot status and diagnostic information."""
         embed = discord.Embed(
             title="📊 Bot Status",
+            description="Comprehensive system status and diagnostics",
             color=discord.Color.blue(),
             timestamp=datetime.utcnow(),
         )
@@ -639,6 +652,7 @@ class CoreCog(commands.Cog):
             embed.add_field(name="Loaded Cogs", value=len(self.bot.cogs), inline=True)
 
         embed.add_field(name="Commands", value=len(self.bot.commands), inline=True)
+        embed.add_field(name="Core Version", value="v2.0.0", inline=True)
 
         # Get database stats if available
         try:
@@ -668,10 +682,10 @@ class CoreCog(commands.Cog):
     @commands.command(name="shutdown")
     @owner_only()
     async def shutdown(self, ctx):
-        """Shutdown the bot (owner only)."""
+        """Gracefully shutdown the bot (owner only)."""
         embed = discord.Embed(
             title="👋 Shutting Down",
-            description="Bot is shutting down...",
+            description="Bot is shutting down gracefully...",
             color=discord.Color.orange(),
             timestamp=datetime.utcnow(),
         )
@@ -707,5 +721,6 @@ class CoreCog(commands.Cog):
 
 
 async def setup(bot):
-    """Setup function to add the cog to the bot."""
+    """Setup function to add the CoreCog to the bot."""
     await bot.add_cog(CoreCog(bot))
+    logger.info("Core cog loaded successfully - Essential bot functionality available")
