@@ -124,6 +124,11 @@ class CoreCog(commands.Cog):
         if "TimezoneCog" in self.bot.cogs:
             cog_commands.append("🌍 **Timezone**: `time`, `time list`, `time compare`")
 
+        if "JapaneseCog" in self.bot.cogs:
+            cog_commands.append(
+                "🇯🇵 **Japanese**: `translate`, `kanji`, `romaji`, `jpstatus`"
+            )
+
         if (
             "SettingsCog" in self.bot.cogs
             and permission_level.value >= PermissionLevel.ADMIN.value

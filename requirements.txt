@@ -15,6 +15,12 @@ redis==5.0.1
 # Utilities
 python-dotenv==1.0.0
 
+# Japanese learning features
+googletrans==4.0.0rc1
+jamdict==0.1a11
+jamdict-data==1.5
+requests==2.31.0
+
 # Development dependencies (optional)
 pytest==7.4.3
 pytest-asyncio==0.21.1
