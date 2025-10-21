@@ -432,14 +432,14 @@ class CoreCog(commands.Cog):
     @owner_only()
     async def list_servers(self, ctx):
         """List all servers the bot is currently in."""
-        guilds = self.bot.guilds
+        guilds = list(self.bot.guilds)  # Convert SequenceProxy to list
 
         if not guilds:
             await ctx.send("❌ Bot is not in any servers.")
             return
 
         # Sort by member count (descending)
-        guilds.sort(key=lambda g: g.member_count, reverse=True)
+        guilds.sort(key=lambda g: g.member_count or 0, reverse=True)
 
         embed = discord.Embed(
             title="📋 Bot Server List",
