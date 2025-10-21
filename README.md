@@ -143,11 +143,13 @@ python dev.py run
 
 ## Commands
 
-### General Commands (All Users)
+### Core Commands (All Users)
 
-- `!help` - Show help information
+- `!help` - Comprehensive help system with role-based filtering
 - `!ping` - Check bot latency
-- `!info` - Show bot information
+- `!info` - Detailed bot information and statistics
+- `!uptime` - Show bot uptime
+- `!contact <message>` - Send message to bot owner (60s cooldown)
 
 ### Reminder Commands (All Users)
 
@@ -216,9 +218,13 @@ python dev.py run
 
 ### Owner Commands (Owner Only)
 
-- `!ip` - Check bot's public IP address
-- `!ip-info` - Detailed IP information with geolocation
+- `!dm <user_id> <message>` - Send direct message to any user
+- `!servers` - List all servers the bot is in
+- `!leave <server_id> [server_id2]...` - Leave one or more servers
+- `!restart` - Restart the bot
 - `!shutdown` - Shutdown the bot
+- `!ip` - Check bot's public IP address (if IP check cog loaded)
+- `!ip-info` - Detailed IP information with geolocation (if IP check cog loaded)
 
 ## Configuration
 
@@ -259,14 +265,17 @@ Role names can be customized per server using the settings commands.
 discordbot/
 ├── bot/                    # Bot source code
 │   ├── main.py            # Main bot entry point
-│   ├── cogs/              # Modular command groups
-│   │   ├── general.py     # General commands
+│   ├── cogs/              # Built-in command modules
+│   │   ├── core.py        # Essential bot commands and admin utilities
 │   │   ├── reminders.py   # Reminder system
 │   │   ├── timezone.py    # Timezone commands
 │   │   ├── settings.py    # Bot settings management
 │   │   ├── plugin_management.py # Plugin system commands
-│   │   └── ip_check.py    # IP checking commands
+│   │   ├── ip_check.py    # IP checking commands
+│   │   └── general.py     # Legacy general commands (deprecated)
 │   ├── plugins/           # Custom plugins directory
+│   │   ├── example.py     # Example plugin template
+│   │   └── README.md      # Plugin development guide
 │   └── utils/             # Utility modules
 │       ├── config.py      # Configuration management
 │       ├── permissions.py # Permission system
